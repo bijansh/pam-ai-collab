@@ -1,0 +1,36 @@
+name: Helm Test on Kind Cluster
+
+on:
+  pull_request:
+    paths:
+      - 'charts/**'
+  push:
+    paths:
+      - 'charts/**'
+
+jobs:
+  helm-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Kubernetes (kind)
+        uses: helm/kind-action@v1.5.0
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v3
+
+      - name: Run helm lint
+        run: helm lint charts/keycloak
+
+      - name: Install Keycloak chart
+        run: helm install keycloak charts/keycloak --set ingress.enabled=false
+
+      - name: Wait for Keycloak pod to be ready
+        run: |
+          kubectl wait --for=condition=Ready pod -l app=keycloak --timeout=60s
+
+      - name: Run helm test
+        run: helm test keycloak
+
