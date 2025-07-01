@@ -3,4 +3,4 @@ name: keycloak
 description: A Helm chart for Keycloak
 type: application
 version: 0.1.0
-appVersion: "26.2.0"  # ورژن اپلیکیشن Keycloak (مثال)
+appVersion: "20.0.0"  # نسخه Keycloak فرضی
