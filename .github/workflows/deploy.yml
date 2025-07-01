@@ -16,10 +16,8 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.environment }}
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v3
 
       - name: Set up Helm
@@ -32,11 +30,16 @@ jobs:
             curl -Lo kind https://kind.sigs.k8s.io/dl/v0.22.0/kind-linux-amd64
             chmod +x kind
             sudo mv kind /usr/local/bin/
-            kind create cluster
+            kind create cluster --wait 60s
+            kubectl cluster-info
           else
-            echo "For prod, connect to real cluster manually or via secrets"
+            echo "For prod, please configure kubeconfig via secrets"
           fi
 
       - name: Deploy Helm Chart
         run: |
-          helm upgrade --install keycloak charts/keycloak --set ingress.enabled=false
+          helm upgrade --install keycloak charts/keycloak --set ingress.enabled=false --set service.port=8080
+
+      - name: Cleanup kind cluster (if dev/staging)
+        if: ${{ github.event.inputs.environment != 'prod' }}
+        run: kind delete cluster
