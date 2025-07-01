@@ -22,6 +22,8 @@ jobs:
 
       - name: Set up Helm
         uses: azure/setup-helm@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Kubernetes Cluster (kind for dev/staging or real for prod)
         run: |
@@ -30,16 +32,11 @@ jobs:
             curl -Lo kind https://kind.sigs.k8s.io/dl/v0.22.0/kind-linux-amd64
             chmod +x kind
             sudo mv kind /usr/local/bin/
-            kind create cluster --wait 60s
-            kubectl cluster-info
+            kind create cluster
           else
-            echo "For prod, please configure kubeconfig via secrets"
+            echo "For prod, connect to real cluster manually or via secrets"
           fi
 
       - name: Deploy Helm Chart
         run: |
           helm upgrade --install keycloak charts/keycloak --set ingress.enabled=false --set service.port=8080
-
-      - name: Cleanup kind cluster (if dev/staging)
-        if: ${{ github.event.inputs.environment != 'prod' }}
-        run: kind delete cluster
