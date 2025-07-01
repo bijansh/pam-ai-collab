@@ -13,4 +13,4 @@ spec:
     - name: curl
       image: curlimages/curl:8.6.0
       command: ["curl"]
-      args: ["-sf", "http://{{ .Release.Name }}:{{ .Values.service.port }}/"]
+      args: ["-sf", "http://{{ .Release.Name }}:{{ default 8080 .Values.service.port }}/"]
